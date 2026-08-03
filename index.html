@@ -24,7 +24,6 @@
         body.sub-mode:not(.dark-mode) { --bg-color: #ffebee; }
         body.sub-mode.dark-mode { --bg-color: #3a0b0b; }
 
-        /* iPhoneのノッチ（画面上部のカメラ部分）や横画面の余白を自動調整 */
         body { font-family: -apple-system, sans-serif; padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); background-color: var(--bg-color); color: var(--text-main); user-select: none; margin: 0; transition: background-color 0.2s; }
         
         @keyframes flashPlus { 0% { background-color: #c8e6c9; } 100% { background-color: var(--bg-color); } }
@@ -32,7 +31,6 @@
         .flash-plus { animation: flashPlus 0.2s ease-out; }
         .flash-minus { animation: flashMinus 0.2s ease-out; }
         
-        /* タブ切り替えUI */
         .tab-container { display: flex; gap: 5px; margin-bottom: 10px; }
         .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; background-color: var(--card-bg); color: var(--text-sub); transition: 0.2s; -webkit-tap-highlight-color: transparent; box-shadow: 0 2px 5px var(--box-shadow); }
         .tab-btn.active { background-color: var(--mode-color); color: white; }
@@ -75,7 +73,6 @@
         .theme-switch { background: #333; color: white; border: none; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: bold; }
         body.dark-mode .theme-switch { background: #f2f2f7; color: black; }
 
-        /* --- 横画面（ランドスケープ）時のレイアウト調整 --- */
         @media screen and (orientation: landscape) {
             .grid-counters { grid-template-columns: repeat(3, 1fr); }
             .grid-2 { grid-template-columns: repeat(2, 1fr); }
@@ -159,9 +156,7 @@
         let isSubMode = false;
         let isNameEditLocked = true;
         let currentTab = 'A';
-        let isDark = false;
         
-        // --- データの初期状態を作る関数 ---
         function createDefaultData() {
             return {
                 counters: [
@@ -179,41 +174,13 @@
             };
         }
 
-        // A, B, C の3台分のデータを保持
         let appData = {
             'A': createDefaultData(),
             'B': createDefaultData(),
             'C': createDefaultData()
         };
-        let counters = appData[currentTab].counters; // 現在のタブのカウンターを参照
+        let counters = appData[currentTab].counters;
 
-        // --- タブ切り替え処理 ---
-        function switchTab(tab) {
-            syncCurrentDataToApp(); // 切り替え前に今の入力状態を保存
-            currentTab = tab;
-            
-            // タブの見た目を更新
-            document.querySelectorAll('.tab-btn').forEach(btn => {
-                btn.classList.toggle('active', btn.dataset.tab === tab);
-            });
-
-            // 選んだタブのデータを入力欄に反映
-            const data = appData[tab];
-            counters = data.counters;
-            document.getElementById('start-games').value = data.startGames;
-            document.getElementById('total-games').value = data.totalGames;
-            document.getElementById('machine-no').value = data.machineNo;
-            document.getElementById('series-select').value = data.series;
-            
-            // タブ移動時は誤操作防止のためロック状態・加算モードに戻す
-            isSubMode = false;
-            isNameEditLocked = true;
-            updateControlsUI();
-            
-            renderCounters();
-        }
-
-        // 入力欄の数値を裏側のデータに同期させる
         function syncCurrentDataToApp() {
             appData[currentTab].startGames = document.getElementById('start-games').value;
             appData[currentTab].totalGames = document.getElementById('total-games').value;
@@ -222,7 +189,6 @@
             appData[currentTab].counters = counters;
         }
 
-        // --- 保存と読み込み ---
         function saveData() {
             syncCurrentDataToApp();
             const saveData = {
@@ -242,14 +208,40 @@
                     document.body.classList.add('dark-mode');
                     document.querySelector('.theme-switch').innerText = '☀️ ライトモード';
                 }
-                // 前回開いていたタブを復元
-                switchTab(data.currentTab || 'A');
+                // アプリ起動時はデータを上書きしないように第2引数にtrueを渡す
+                switchTab(data.currentTab || 'A', true);
             } else {
-                renderCounters();
+                switchTab('A', true);
             }
         }
 
-        // --- コピー機能 ---
+        // tab切替処理。isInitializingがtrueの場合は、現在の画面データを保存しない（起動時用）
+        function switchTab(tab, isInitializing = false) {
+            if (!isInitializing) {
+                syncCurrentDataToApp(); 
+            }
+            currentTab = tab;
+            
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+
+            const data = appData[tab];
+            counters = data.counters;
+            document.getElementById('start-games').value = data.startGames;
+            document.getElementById('total-games').value = data.totalGames;
+            document.getElementById('machine-no').value = data.machineNo;
+            document.getElementById('series-select').value = data.series;
+            
+            if (!isInitializing) {
+                isSubMode = false;
+                isNameEditLocked = true;
+                updateControlsUI();
+            }
+            
+            renderCounters();
+        }
+
         function copyData() {
             const series = document.getElementById('series-select').value;
             const machine = document.getElementById('machine-no').value || '未入力';
@@ -257,7 +249,8 @@
             const totalG = document.getElementById('total-games').value;
             const effectiveG = (parseInt(totalG) || 0) - (parseInt(startG) || 0);
 
-            let text = `【${series}】${machine}番台 (タブ${currentTab})\n`;
+            // タブ名の出力を削除しました
+            let text = `【${series}】${machine}番台\n`;
             text += `開始: ${startG}G / 現在: ${totalG}G\n`;
             text += `個人総回転: ${effectiveG > 0 ? effectiveG : 0}G\n\n`;
 
@@ -268,7 +261,7 @@
             });
 
             navigator.clipboard.writeText(text).then(() => {
-                alert(`タブ ${currentTab} のデータをコピーしました！`);
+                alert('データをコピーしました！');
             }).catch(err => {
                 alert('コピーに失敗しました。');
             });
@@ -407,17 +400,27 @@
             saveData(); 
         }
 
-        // --- 完全リセット処理 ---
+        // リセット処理の修正
         function resetAll() {
             if (confirm(`現在開いている【台 ${currentTab}】のデータをすべて初期化しますか？\n（不要なデータは完全に削除されます）`)) {
-                // そのタブのデータをまっさらの初期状態に上書き
-                appData[currentTab] = createDefaultData();
                 
-                // 画面を再読み込み
-                switchTab(currentTab);
+                appData[currentTab] = createDefaultData();
+                counters = appData[currentTab].counters;
+                
+                // 画面の入力欄を直接初期状態に戻す
+                document.getElementById('start-games').value = appData[currentTab].startGames;
+                document.getElementById('total-games').value = appData[currentTab].totalGames;
+                document.getElementById('machine-no').value = appData[currentTab].machineNo;
+                document.getElementById('series-select').value = appData[currentTab].series;
+                
+                if(isSubMode) toggleMode(); 
+                if(!isNameEditLocked) toggleLock(); 
+                
+                renderCounters();
             }
         }
 
+        // 起動時にデータを読み込む
         window.onload = loadData;
     </script>
 </body>
