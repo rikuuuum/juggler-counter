@@ -1,0 +1,424 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="カウンター">
+    
+    <title>高機能ジャグラーカウンター</title>
+    <style>
+        :root { 
+            --bg-color: #f2f2f7; --card-bg: #ffffff; --text-main: #333333; --text-sub: #666666;
+            --mode-color: #007aff; --border-color: #cccccc; --box-shadow: rgba(0,0,0,0.05);
+            --counter-name-bg: #f0f0f0; --prob-bg: #e5e5ea;
+        }
+        body.dark-mode {
+            --bg-color: #000000; --card-bg: #1c1c1e; --text-main: #ffffff; --text-sub: #aaaaaa;
+            --mode-color: #0a84ff; --border-color: #38383a; --box-shadow: rgba(255,255,255,0.02);
+            --counter-name-bg: #2c2c2e; --prob-bg: #3a3a3c;
+        }
+        body.sub-mode { --mode-color: #ff3b30; }
+        body.sub-mode:not(.dark-mode) { --bg-color: #ffebee; }
+        body.sub-mode.dark-mode { --bg-color: #3a0b0b; }
+
+        /* iPhoneのノッチ（画面上部のカメラ部分）や横画面の余白を自動調整 */
+        body { font-family: -apple-system, sans-serif; padding: max(10px, env(safe-area-inset-top)) max(10px, env(safe-area-inset-right)) max(10px, env(safe-area-inset-bottom)) max(10px, env(safe-area-inset-left)); background-color: var(--bg-color); color: var(--text-main); user-select: none; margin: 0; transition: background-color 0.2s; }
+        
+        @keyframes flashPlus { 0% { background-color: #c8e6c9; } 100% { background-color: var(--bg-color); } }
+        @keyframes flashMinus { 0% { background-color: #ffcdd2; } 100% { background-color: var(--bg-color); } }
+        .flash-plus { animation: flashPlus 0.2s ease-out; }
+        .flash-minus { animation: flashMinus 0.2s ease-out; }
+        
+        /* タブ切り替えUI */
+        .tab-container { display: flex; gap: 5px; margin-bottom: 10px; }
+        .tab-btn { flex: 1; padding: 12px; font-size: 16px; font-weight: bold; border: none; border-radius: 8px; background-color: var(--card-bg); color: var(--text-sub); transition: 0.2s; -webkit-tap-highlight-color: transparent; box-shadow: 0 2px 5px var(--box-shadow); }
+        .tab-btn.active { background-color: var(--mode-color); color: white; }
+
+        .card { background: var(--card-bg); padding: 12px; border-radius: 10px; margin-bottom: 12px; box-shadow: 0 2px 5px var(--box-shadow); }
+        input[type=number]::-webkit-inner-spin-button, input[type=number]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        select, input[type="number"], input[type="text"] { font-size: 16px; padding: 8px; border: 1px solid var(--border-color); border-radius: 6px; width: 100%; box-sizing: border-box; background-color: var(--card-bg); color: var(--text-main); }
+        
+        .input-group { margin-bottom: 10px; }
+        .input-group label { display: block; font-size: 12px; color: var(--text-sub); margin-bottom: 4px; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+
+        .total-games-control { display: flex; gap: 8px; align-items: center; }
+        .total-games-control input { flex: 1; text-align: center; font-size: 22px; font-weight: bold; color: var(--mode-color); padding: 10px; }
+        .btn-tap { background-color: var(--mode-color); color: white; border: none; border-radius: 6px; padding: 12px; font-size: 18px; font-weight: bold; -webkit-tap-highlight-color: transparent; transition: transform 0.1s; min-width: 60px; }
+        .btn-tap:active { transform: scale(0.92); opacity: 0.8; }
+
+        .controls-flex { display: flex; gap: 10px; margin-bottom: 15px; }
+        .controls-flex button { flex: 1; padding: 12px 5px; font-size: 14px; font-weight: bold; color: white; border: none; border-radius: 8px; -webkit-tap-highlight-color: transparent; }
+        .mode-toggle { background-color: var(--mode-color); }
+        .lock-toggle { background-color: #8e8e93; }
+        .lock-toggle.unlocked { background-color: #ff9500; }
+        
+        .grid-counters { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .counter-box { background: var(--card-bg); border-radius: 10px; padding: 10px; text-align: center; box-shadow: 0 2px 5px var(--box-shadow); border: 2px solid transparent; transition: transform 0.1s; -webkit-tap-highlight-color: transparent; }
+        .counter-box:active { transform: scale(0.92); opacity: 0.8; }
+        body.sub-mode .counter-box { border-color: #ff3b30; }
+
+        .counter-name { font-size: 14px; font-weight: bold; color: var(--text-main); padding: 5px; background: var(--counter-name-bg); border-radius: 4px; margin-bottom: 2px; }
+        .counter-name.editable { background: #ffe0b2; color: #e65100; border: 1px dashed #ff9800; }
+        .counter-value { font-size: 36px; font-weight: bold; color: var(--mode-color); margin: 2px 0; }
+        .counter-prob { font-size: 14px; font-weight: bold; color: var(--text-sub); background: var(--prob-bg); border-radius: 4px; padding: 4px; margin-top: 5px; }
+        
+        .action-btns { display: grid; grid-template-columns: 1fr; gap: 10px; margin-bottom: 20px; }
+        .btn-outline { width: 100%; padding: 10px; border: 2px dashed var(--border-color); background: none; border-radius: 8px; font-size: 14px; color: var(--text-sub); font-weight: bold; -webkit-tap-highlight-color: transparent; }
+        .btn-solid { width: 100%; padding: 12px; background: #34c759; color: white; font-weight: bold; font-size: 15px; border: none; border-radius: 8px; -webkit-tap-highlight-color: transparent; display: flex; justify-content: center; align-items: center; gap: 5px; }
+        .reset-btn { width: 100%; padding: 15px; background: #ff3b30; color: white; font-weight: bold; font-size: 16px; border: none; border-radius: 8px; -webkit-tap-highlight-color: transparent; margin-bottom: 30px; }
+        
+        .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; padding-top: 5px; }
+        .theme-switch { background: #333; color: white; border: none; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: bold; }
+        body.dark-mode .theme-switch { background: #f2f2f7; color: black; }
+
+        /* --- 横画面（ランドスケープ）時のレイアウト調整 --- */
+        @media screen and (orientation: landscape) {
+            .grid-counters { grid-template-columns: repeat(3, 1fr); }
+            .grid-2 { grid-template-columns: repeat(2, 1fr); }
+            .tab-container { margin-bottom: 5px; }
+            .card { padding: 8px; margin-bottom: 8px; }
+            .counter-value { font-size: 28px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header-top">
+        <h2 style="margin: 0; font-size: 18px;">カウンター</h2>
+        <button class="theme-switch" onclick="toggleTheme()">🌙 ダークモード</button>
+    </div>
+
+    <!-- 台切り替えタブ -->
+    <div class="tab-container">
+        <button class="tab-btn active" data-tab="A" onclick="switchTab('A')">台 A</button>
+        <button class="tab-btn" data-tab="B" onclick="switchTab('B')">台 B</button>
+        <button class="tab-btn" data-tab="C" onclick="switchTab('C')">台 C</button>
+    </div>
+
+    <div class="card">
+        <div class="grid-2">
+            <div class="input-group">
+                <label>機種選択</label>
+                <select id="series-select" onchange="renderCounters()">
+                    <option>マイジャグラーV</option>
+                    <option>アイムジャグラーEX</option>
+                    <option>ゴーゴージャグラー3</option>
+                    <option>ファンキージャグラー2</option>
+                    <option>ハッピージャグラーV III</option>
+                    <option>ジャグラーガールズSS</option>
+                    <option>ミスタージャグラー</option>
+                    <option>その他</option>
+                </select>
+            </div>
+            <div class="input-group">
+                <label>台番号メモ</label>
+                <input type="text" id="machine-no" placeholder="例: 777" oninput="renderCounters()">
+            </div>
+        </div>
+        
+        <div class="grid-2">
+            <div class="input-group">
+                <label>スタート回数</label>
+                <input type="number" id="start-games" value="0" oninput="renderCounters()" style="text-align: center; font-size: 20px;">
+            </div>
+            <div class="input-group">
+                <label>有効ゲーム数（自動計算）</label>
+                <div id="effective-games-display" style="font-size: 22px; font-weight: bold; text-align: center; padding: 6px; color: var(--text-sub);">0 G</div>
+            </div>
+        </div>
+
+        <div class="input-group" style="margin-top: 5px; border-top: 1px solid var(--border-color); padding-top: 12px;">
+            <label style="color: var(--mode-color); font-weight: bold; font-size: 14px;">現在の総回転</label>
+            <div class="total-games-control">
+                <input type="number" id="total-games" value="0" oninput="renderCounters()">
+                <button class="btn-tap" id="btn-total-1" onclick="tapTotalGames(1)">+1</button>
+                <button class="btn-tap" id="btn-total-10" onclick="tapTotalGames(10)">+10</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="controls-flex">
+        <button class="mode-toggle" id="mode-btn" onclick="toggleMode()">【＋】加算モード</button>
+        <button class="lock-toggle" id="lock-btn" onclick="toggleLock()">名称変更: ロック中 🔒</button>
+    </div>
+
+    <div class="grid-counters" id="counters-container"></div>
+    
+    <div class="action-btns">
+        <button class="btn-outline" onclick="addCustomCounter()">＋ 新しい項目を追加</button>
+        <button class="btn-solid" onclick="copyData()">📋 現在の台データをコピー</button>
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">現在の台データをリセット</button>
+
+    <script>
+        let isSubMode = false;
+        let isNameEditLocked = true;
+        let currentTab = 'A';
+        let isDark = false;
+        
+        // --- データの初期状態を作る関数 ---
+        function createDefaultData() {
+            return {
+                counters: [
+                    { id: 1, name: 'ぶどう', count: 0 },
+                    { id: 2, name: 'チェリー', count: 0 },
+                    { id: 3, name: '単独BIG', count: 0 },
+                    { id: 4, name: 'チェリーBIG', count: 0 },
+                    { id: 5, name: '単独REG', count: 0 },
+                    { id: 6, name: 'チェリーREG', count: 0 }
+                ],
+                startGames: 0,
+                totalGames: 0,
+                machineNo: '',
+                series: 'マイジャグラーV'
+            };
+        }
+
+        // A, B, C の3台分のデータを保持
+        let appData = {
+            'A': createDefaultData(),
+            'B': createDefaultData(),
+            'C': createDefaultData()
+        };
+        let counters = appData[currentTab].counters; // 現在のタブのカウンターを参照
+
+        // --- タブ切り替え処理 ---
+        function switchTab(tab) {
+            syncCurrentDataToApp(); // 切り替え前に今の入力状態を保存
+            currentTab = tab;
+            
+            // タブの見た目を更新
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.tab === tab);
+            });
+
+            // 選んだタブのデータを入力欄に反映
+            const data = appData[tab];
+            counters = data.counters;
+            document.getElementById('start-games').value = data.startGames;
+            document.getElementById('total-games').value = data.totalGames;
+            document.getElementById('machine-no').value = data.machineNo;
+            document.getElementById('series-select').value = data.series;
+            
+            // タブ移動時は誤操作防止のためロック状態・加算モードに戻す
+            isSubMode = false;
+            isNameEditLocked = true;
+            updateControlsUI();
+            
+            renderCounters();
+        }
+
+        // 入力欄の数値を裏側のデータに同期させる
+        function syncCurrentDataToApp() {
+            appData[currentTab].startGames = document.getElementById('start-games').value;
+            appData[currentTab].totalGames = document.getElementById('total-games').value;
+            appData[currentTab].machineNo = document.getElementById('machine-no').value;
+            appData[currentTab].series = document.getElementById('series-select').value;
+            appData[currentTab].counters = counters;
+        }
+
+        // --- 保存と読み込み ---
+        function saveData() {
+            syncCurrentDataToApp();
+            const saveData = {
+                appData: appData,
+                currentTab: currentTab,
+                isDark: document.body.classList.contains('dark-mode')
+            };
+            localStorage.setItem('jugglerMultiData', JSON.stringify(saveData));
+        }
+
+        function loadData() {
+            const saved = localStorage.getItem('jugglerMultiData');
+            if (saved) {
+                const data = JSON.parse(saved);
+                if (data.appData) appData = data.appData;
+                if (data.isDark) {
+                    document.body.classList.add('dark-mode');
+                    document.querySelector('.theme-switch').innerText = '☀️ ライトモード';
+                }
+                // 前回開いていたタブを復元
+                switchTab(data.currentTab || 'A');
+            } else {
+                renderCounters();
+            }
+        }
+
+        // --- コピー機能 ---
+        function copyData() {
+            const series = document.getElementById('series-select').value;
+            const machine = document.getElementById('machine-no').value || '未入力';
+            const startG = document.getElementById('start-games').value;
+            const totalG = document.getElementById('total-games').value;
+            const effectiveG = (parseInt(totalG) || 0) - (parseInt(startG) || 0);
+
+            let text = `【${series}】${machine}番台 (タブ${currentTab})\n`;
+            text += `開始: ${startG}G / 現在: ${totalG}G\n`;
+            text += `個人総回転: ${effectiveG > 0 ? effectiveG : 0}G\n\n`;
+
+            counters.forEach(c => {
+                let prob = '1/---';
+                if (c.count > 0 && effectiveG > 0) prob = '1/' + (effectiveG / c.count).toFixed(2);
+                text += `${c.name}: ${c.count}回 (${prob})\n`;
+            });
+
+            navigator.clipboard.writeText(text).then(() => {
+                alert(`タブ ${currentTab} のデータをコピーしました！`);
+            }).catch(err => {
+                alert('コピーに失敗しました。');
+            });
+        }
+
+        function toggleTheme() {
+            const body = document.body;
+            const btn = document.querySelector('.theme-switch');
+            body.classList.toggle('dark-mode');
+            if (body.classList.contains('dark-mode')) {
+                btn.innerText = '☀️ ライトモード';
+            } else {
+                btn.innerText = '🌙 ダークモード';
+            }
+            saveData();
+        }
+
+        function triggerFlash() {
+            const body = document.body;
+            body.classList.remove('flash-plus', 'flash-minus');
+            void body.offsetWidth; 
+            body.classList.add(isSubMode ? 'flash-minus' : 'flash-plus');
+        }
+
+        function updateControlsUI() {
+            const modeBtn = document.getElementById('mode-btn');
+            const btnTotal1 = document.getElementById('btn-total-1');
+            const btnTotal10 = document.getElementById('btn-total-10');
+            const lockBtn = document.getElementById('lock-btn');
+
+            if (isSubMode) {
+                document.body.classList.add('sub-mode');
+                modeBtn.innerText = '【－】減算モード中';
+                btnTotal1.innerText = '-1';
+                btnTotal10.innerText = '-10';
+            } else {
+                document.body.classList.remove('sub-mode');
+                modeBtn.innerText = '【＋】加算モード';
+                btnTotal1.innerText = '+1';
+                btnTotal10.innerText = '+10';
+            }
+
+            if (isNameEditLocked) {
+                lockBtn.innerText = '名称変更: ロック中 🔒';
+                lockBtn.classList.remove('unlocked');
+            } else {
+                lockBtn.innerText = '名称変更: 解除 🔓';
+                lockBtn.classList.add('unlocked');
+            }
+        }
+
+        function toggleMode() {
+            isSubMode = !isSubMode;
+            updateControlsUI();
+        }
+
+        function toggleLock() {
+            isNameEditLocked = !isNameEditLocked;
+            updateControlsUI();
+            renderCounters();
+        }
+
+        function tapTotalGames(amount) {
+            const input = document.getElementById('total-games');
+            let current = parseInt(input.value) || 0;
+            let delta = isSubMode ? -amount : amount;
+            let newVal = current + delta;
+            if (newVal < 0) newVal = 0;
+            input.value = newVal;
+            triggerFlash();
+            renderCounters();
+        }
+
+        function tapCounter(id) {
+            let target = counters.find(c => c.id === id);
+            if (!target) return;
+            if (isSubMode) {
+                if (target.count > 0) target.count--;
+            } else {
+                target.count++;
+            }
+            triggerFlash();
+            renderCounters();
+        }
+
+        function renameCounter(id, event) {
+            if (isNameEditLocked) return;
+            event.stopPropagation();
+            let target = counters.find(c => c.id === id);
+            let newName = prompt('新しい名称を入力してください', target.name);
+            if (newName !== null && newName.trim() !== '') {
+                target.name = newName.trim();
+                renderCounters();
+            }
+        }
+
+        function addCustomCounter() {
+            let name = prompt('追加する項目の名前を入力してください');
+            if (name !== null && name.trim() !== '') {
+                counters.push({ id: Date.now(), name: name.trim(), count: 0 });
+                renderCounters();
+            }
+        }
+
+        function renderCounters() {
+            const startG = parseInt(document.getElementById('start-games').value) || 0;
+            const totalG = parseInt(document.getElementById('total-games').value) || 0;
+            const effectiveG = totalG - startG;
+            
+            document.getElementById('effective-games-display').innerText = (effectiveG > 0 ? effectiveG : 0) + ' G';
+
+            const container = document.getElementById('counters-container');
+            container.innerHTML = '';
+            
+            counters.forEach(c => {
+                let probText = '1/---';
+                if (c.count > 0 && effectiveG > 0) {
+                    probText = '1/' + (effectiveG / c.count).toFixed(2);
+                }
+                
+                const div = document.createElement('div');
+                div.className = 'counter-box';
+                div.onclick = () => tapCounter(c.id);
+                
+                const nameClass = isNameEditLocked ? 'counter-name' : 'counter-name editable';
+                const editIcon = isNameEditLocked ? '' : ' ✎';
+                
+                div.innerHTML = `
+                    <div class="${nameClass}" onclick="renameCounter(${c.id}, event)">${c.name}${editIcon}</div>
+                    <div class="counter-value">${c.count}</div>
+                    <div class="counter-prob">${probText}</div>
+                `;
+                container.appendChild(div);
+            });
+            
+            saveData(); 
+        }
+
+        // --- 完全リセット処理 ---
+        function resetAll() {
+            if (confirm(`現在開いている【台 ${currentTab}】のデータをすべて初期化しますか？\n（不要なデータは完全に削除されます）`)) {
+                // そのタブのデータをまっさらの初期状態に上書き
+                appData[currentTab] = createDefaultData();
+                
+                // 画面を再読み込み
+                switchTab(currentTab);
+            }
+        }
+
+        window.onload = loadData;
+    </script>
+</body>
+</html>
