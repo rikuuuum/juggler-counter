@@ -8,6 +8,7 @@
     <meta name="apple-mobile-web-app-title" content="カウンター">
     <title>高機能ジャグラーカウンター</title>
 
+    <!-- グラフ描画用ライブラリ -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
@@ -74,16 +75,19 @@
         .theme-switch { background: #333; color: white; border: none; border-radius: 20px; padding: 5px 12px; font-size: 12px; font-weight: bold; }
         body.dark-mode .theme-switch { background: #f2f2f7; color: black; }
 
-        .estimation-box { background: rgba(0, 122, 255, 0.1); border-left: 4px solid var(--mode-color); padding: 10px; border-radius: 4px; margin-top: 10px; font-size: 13px; }
-        .estimation-title { font-weight: bold; color: var(--mode-color); margin-bottom: 4px; }
+        /* 視覚的設定推測ゲージのスタイル */
+        .estimation-box { background: rgba(0, 122, 255, 0.05); border: 1px solid rgba(0, 122, 255, 0.2); padding: 12px 10px 5px 10px; border-radius: 8px; margin-top: 15px; }
+        .estimation-title { font-weight: bold; color: var(--mode-color); margin-bottom: 15px; font-size: 14px; text-align: center; }
 
+        /* モーダル用スタイル（横スクロール対応） */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.6); z-index: 1000; justify-content: center; align-items: center; }
         .modal-overlay.active { display: flex; }
-        .modal-content { background: var(--card-bg); color: var(--text-main); width: 90%; max-width: 500px; max-height: 85vh; border-radius: 12px; padding: 15px; box-sizing: border-box; overflow-y: auto; position: relative; }
+        .modal-content { background: var(--card-bg); color: var(--text-main); width: 95%; max-width: 600px; max-height: 85vh; border-radius: 12px; padding: 15px; box-sizing: border-box; overflow-y: auto; position: relative; }
         .modal-close { position: absolute; top: 10px; right: 10px; background: #8e8e93; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; font-weight: bold; }
         
-        .spec-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 12px; text-align: center; }
-        .spec-table th, .spec-table td { border: 1px solid var(--border-color); padding: 6px 2px; }
+        .table-responsive { width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; margin-top: 10px; }
+        .spec-table { width: 100%; min-width: 500px; border-collapse: collapse; font-size: 11px; text-align: center; }
+        .spec-table th, .spec-table td { border: 1px solid var(--border-color); padding: 8px 4px; white-space: nowrap; }
         .spec-table th { background: var(--counter-name-bg); }
 
         @media screen and (orientation: landscape) {
@@ -145,9 +149,14 @@
             </div>
         </div>
 
+        <!-- 視覚的設定推測ゲージエリア -->
         <div class="estimation-box" id="estimation-box">
-            <div class="estimation-title">🎯 設定推測目安</div>
-            <div id="estimation-result">100G以上実戦すると設定目安が表示されます。</div>
+            <div class="estimation-title">🎯 リアルタイム設定推測ゲージ</div>
+            <div id="estimation-result">
+                <div style="text-align:center; color:var(--text-sub); font-size:12px; margin-bottom:10px;">
+                    100G以上実戦すると、ここに現在地を示すゲージが表示されます。
+                </div>
+            </div>
         </div>
     </div>
 
@@ -167,6 +176,7 @@
     <button class="btn-solid" onclick="copyData()">📋 現在の台データをコピー</button>
     <button class="reset-btn" onclick="resetAll()">現在の台データをリセット</button>
 
+    <!-- モーダル: 機種スペック表（単独ボーナス追加版） -->
     <div class="modal-overlay" id="spec-modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('spec-modal')">✕</button>
@@ -175,6 +185,7 @@
         </div>
     </div>
 
+    <!-- モーダル: 確率推移グラフ（100G以降限定版） -->
     <div class="modal-overlay" id="graph-modal">
         <div class="modal-content">
             <button class="modal-close" onclick="closeModal('graph-modal')">✕</button>
@@ -182,50 +193,65 @@
             <div style="position: relative; height:300px; width:100%;">
                 <canvas id="probChart"></canvas>
             </div>
-            <p style="font-size:11px; color:gray; margin-top:10px; text-align:center;">※回転数を進めたりカウントを行うと自動で推移が記録されます。</p>
+            <p style="font-size:11px; color:gray; margin-top:10px; text-align:center;">※ばらつきを抑えるため、100G以降のデータのみ表示します。</p>
         </div>
     </div>
     <script>
+        // 単独ボーナスを含む詳細なスペックデータ
         const JUGGLER_SPECS = {
             'マイジャグラーV': {
                 grape: [5.90, 5.85, 5.80, 5.75, 5.70, 5.66],
+                solo_bb: [402.0, 394.8, 381.0, 358.1, 334.3, 318.1],
                 bb: [273.1, 270.8, 266.4, 254.0, 240.9, 229.1],
+                solo_rb: [564.9, 528.5, 442.8, 368.1, 334.3, 277.6],
                 rb: [409.6, 385.5, 336.1, 290.0, 268.6, 229.1],
                 total: [163.8, 159.1, 148.6, 135.4, 127.0, 114.6]
             },
             'アイムジャグラーEX': {
                 grape: [6.02, 6.02, 6.02, 6.02, 6.02, 5.78],
+                solo_bb: [409.6, 399.6, 399.6, 381.0, 381.0, 372.4],
                 bb: [273.1, 269.7, 269.7, 259.0, 259.0, 255.0],
+                solo_rb: [630.2, 546.1, 431.2, 409.6, 327.7, 327.7],
                 rb: [439.8, 399.6, 331.0, 315.1, 255.0, 255.0],
                 total: [168.5, 161.4, 148.6, 142.5, 128.5, 127.5]
             },
             'ゴーゴージャグラー3': {
                 grape: [6.25, 6.20, 6.15, 6.10, 6.05, 5.92],
+                solo_bb: [372.4, 368.2, 360.1, 348.6, 331.0, 321.3],
                 bb: [259.0, 258.0, 256.0, 251.0, 240.0, 234.9],
+                solo_rb: [496.5, 455.1, 409.6, 344.9, 312.1, 292.6],
                 rb: [354.2, 332.7, 306.2, 268.6, 247.3, 234.9],
                 total: [149.6, 145.3, 139.4, 129.8, 121.8, 117.4]
             },
             'ファンキージャグラー2': {
                 grape: [5.94, 5.90, 5.85, 5.80, 5.75, 5.66],
+                solo_bb: [385.5, 372.4, 364.1, 352.3, 337.8, 303.4],
                 bb: [266.4, 259.0, 256.0, 248.2, 240.9, 219.9],
+                solo_rb: [595.8, 546.1, 474.9, 409.6, 372.4, 318.1],
                 rb: [439.8, 407.1, 366.2, 322.8, 299.3, 262.1],
                 total: [165.9, 158.3, 150.7, 140.2, 133.7, 118.7]
             },
             'ハッピージャグラーV III': {
                 grape: [6.08, 6.05, 6.00, 5.95, 5.88, 5.80],
+                solo_bb: [409.6, 402.0, 381.0, 364.1, 334.4, 312.1],
                 bb: [273.1, 270.8, 263.2, 254.0, 239.2, 226.0],
+                solo_rb: [546.1, 489.1, 442.8, 390.1, 344.9, 315.1],
                 rb: [397.2, 362.1, 332.7, 300.6, 273.1, 256.0],
                 total: [161.8, 154.9, 146.9, 137.7, 127.5, 120.0]
             },
             'ジャグラーガールズSS': {
                 grape: [6.02, 5.98, 5.94, 5.89, 5.83, 5.75],
+                solo_bb: [409.6, 399.6, 381.0, 364.1, 344.9, 318.1],
                 bb: [273.1, 268.6, 260.1, 251.1, 240.9, 226.0],
+                solo_rb: [528.5, 474.9, 420.1, 356.2, 315.1, 282.5],
                 rb: [381.0, 352.3, 321.1, 282.5, 257.0, 234.9],
                 total: [159.1, 152.4, 143.7, 132.7, 124.1, 115.4]
             },
             'ミスタージャグラー': {
                 grape: [5.95, 5.90, 5.85, 5.80, 5.73, 5.62],
+                solo_bb: [399.6, 390.1, 372.4, 356.2, 337.8, 312.1],
                 bb: [268.6, 264.3, 256.0, 248.2, 239.2, 224.4],
+                solo_rb: [512.0, 461.5, 402.0, 352.3, 318.1, 287.4],
                 rb: [374.5, 344.9, 309.1, 277.8, 257.0, 238.3],
                 total: [156.4, 149.3, 140.0, 130.8, 123.7, 115.5]
             }
@@ -276,11 +302,11 @@
                 currentTab: currentTab,
                 isDark: document.body.classList.contains('dark-mode')
             };
-            localStorage.setItem('jugglerMultiData_v2', JSON.stringify(saveData));
+            localStorage.setItem('jugglerMultiData_v3', JSON.stringify(saveData));
         }
 
         function loadData() {
-            const saved = localStorage.getItem('jugglerMultiData_v2');
+            const saved = localStorage.getItem('jugglerMultiData_v3');
             if (saved) {
                 const data = JSON.parse(saved);
                 if (data.appData) appData = data.appData;
@@ -343,45 +369,71 @@
             appData[currentTab].history = history;
         }
 
+        // --- 視覚的設定推測ゲージの作成 ---
+        function createGaugeHTML(title, currentProb, specArray, color1, color2) {
+            if (!currentProb || currentProb === Infinity) {
+                return `<div style="margin-bottom:15px;">
+                            <div style="font-size:13px; font-weight:bold;">${title}</div>
+                            <div style="font-size:12px; color:var(--text-sub); margin-top:4px;">データ不足（カウント0回）</div>
+                        </div>`;
+            }
+            
+            let val1 = specArray[0];
+            let val6 = specArray[5];
+            
+            // 設定1〜6の実際の差分から、現在地をパーセンテージで計算
+            let percent = (val1 - currentProb) / (val1 - val6) * 100;
+            let displayPercent = Math.max(-5, Math.min(105, percent)); // はみ出し過ぎを防止
+
+            let html = `<div style="margin-bottom:30px;">
+                <div style="display:flex; justify-content:space-between; font-size:13px; margin-bottom:12px;">
+                    <strong>${title}</strong>
+                    <span style="color:${color1}; font-weight:bold;">現在: 1/${currentProb.toFixed(2)}</span>
+                </div>
+                <div style="position:relative; width:100%; height:8px; background:var(--prob-bg); border-radius:4px;">
+                    <!-- 現在値までのグラデーションバー -->
+                    <div style="position:absolute; left:0; top:0; height:100%; width:${Math.max(0, Math.min(100, percent))}%; background:linear-gradient(90deg, ${color1} 0%, ${color2} 100%); border-radius:4px;"></div>
+                    `;
+            
+            // 設定1〜6の目盛りを正確な比率で配置
+            for (let i=0; i<6; i++) {
+                let p = (val1 - specArray[i]) / (val1 - val6) * 100;
+                html += `<div style="position:absolute; left:${p}%; top:-4px; width:2px; height:16px; background:var(--text-sub); border-radius:1px;"></div>`;
+                html += `<div style="position:absolute; left:calc(${p}% - 4px); top:16px; font-size:10px; color:var(--text-sub); font-weight:bold;">${i+1}</div>`;
+            }
+
+            // 現在地を示すポインタ
+            html += `<div style="position:absolute; left:calc(${displayPercent}% - 7px); top:-20px; font-size:16px; color:#ff3b30; text-shadow: 0 1px 2px rgba(0,0,0,0.2); z-index:2;">▼</div>
+                </div>
+            </div>`;
+            return html;
+        }
+
         function updateEstimation(effectiveG) {
             const series = document.getElementById('series-select').value;
             const spec = JUGGLER_SPECS[series];
             const resultBox = document.getElementById('estimation-result');
 
             if (!spec || effectiveG < 100) {
-                resultBox.innerText = '100G以上実戦すると設定目安が表示されます。';
+                resultBox.innerHTML = '<div style="text-align:center; color:var(--text-sub); font-size:12px; margin-bottom:10px;">100G以上実戦すると、ここに現在地を示すゲージが表示されます。</div>';
                 return;
             }
 
             const grapeCount = counters.find(c => c.name === 'ぶどう')?.count || 0;
-            const regCount = (counters.find(c => c.name === '単独REG')?.count || 0) + (counters.find(c => c.name === 'チェリーREG')?.count || 0);
             const bbCount = (counters.find(c => c.name === '単独BIG')?.count || 0) + (counters.find(c => c.name === 'チェリーBIG')?.count || 0);
+            const regCount = (counters.find(c => c.name === '単独REG')?.count || 0) + (counters.find(c => c.name === 'チェリーREG')?.count || 0);
+            const bonusCount = bbCount + regCount;
 
-            if (grapeCount === 0 && regCount === 0 && bbCount === 0) {
-                resultBox.innerText = 'カウントデータを入力すると自動推測されます。';
-                return;
-            }
+            const currentGrapeProb = grapeCount > 0 ? effectiveG / grapeCount : Infinity;
+            const currentBonusProb = bonusCount > 0 ? effectiveG / bonusCount : Infinity;
 
-            const currentGrapeProb = grapeCount > 0 ? effectiveG / grapeCount : 99;
-            const currentRegProb = regCount > 0 ? effectiveG / regCount : 999;
+            let html = createGaugeHTML('🍇 ぶどう確率', currentGrapeProb, spec.grape, '#34c759', '#30d158');
+            html += createGaugeHTML('🎰 ボーナス合算確率', currentBonusProb, spec.total, '#ff9500', '#ffcc00');
 
-            let bestSetting = 1;
-            let minDiff = 9999;
-
-            for (let s = 1; s <= 6; s++) {
-                const diffGrape = Math.abs(currentGrapeProb - spec.grape[s-1]);
-                const diffReg = Math.abs(currentRegProb - spec.rb[s-1]) / 10;
-                const totalDiff = diffGrape + diffReg;
-
-                if (totalDiff < minDiff) {
-                    minDiff = totalDiff;
-                    bestSetting = s;
-                }
-            }
-
-            resultBox.innerHTML = `現在の挙動は <strong>【設定 ${bestSetting}】</strong> に最も近い数値です。`;
+            resultBox.innerHTML = html;
         }
 
+        // --- 機種スペック表の表示 ---
         function openSpecModal() {
             const series = document.getElementById('series-select').value;
             const spec = JUGGLER_SPECS[series];
@@ -391,40 +443,54 @@
             if (!spec) {
                 body.innerHTML = 'スペックデータがありません。';
             } else {
-                let html = `<table class="spec-table">
-                    <tr><th>設定</th><th>ぶどう</th><th>BIG</th><th>REG</th><th>合算</th></tr>`;
+                let html = `<div class="table-responsive">
+                    <table class="spec-table">
+                    <tr><th>設定</th><th>ぶどう</th><th>単独BIG</th><th>合算BIG</th><th>単独REG</th><th>合算REG</th><th>合算ボーナス</th></tr>`;
                 for (let i = 0; i < 6; i++) {
                     html += `<tr>
                         <td><strong>設定${i+1}</strong></td>
-                        <td>1/${spec.grape[i]}</td>
-                        <td>1/${spec.bb[i]}</td>
-                        <td>1/${spec.rb[i]}</td>
-                        <td>1/${spec.total[i]}</td>
+                        <td>1/${spec.grape[i].toFixed(2)}</td>
+                        <td>1/${spec.solo_bb[i].toFixed(1)}</td>
+                        <td>1/${spec.bb[i].toFixed(1)}</td>
+                        <td>1/${spec.solo_rb[i].toFixed(1)}</td>
+                        <td>1/${spec.rb[i].toFixed(1)}</td>
+                        <td style="font-weight:bold; color:var(--mode-color);">1/${spec.total[i].toFixed(1)}</td>
                     </tr>`;
                 }
-                html += `</table>`;
+                html += `</table></div>`;
                 body.innerHTML = html;
             }
             document.getElementById('spec-modal').classList.add('active');
         }
 
+        // --- 確率推移グラフの表示（100G以降限定） ---
         function openGraphModal() {
             document.getElementById('graph-modal').classList.add('active');
             const history = appData[currentTab].history || [];
+            const filteredHistory = history.filter(h => h.g >= 100);
             
             const ctx = document.getElementById('probChart').getContext('2d');
             if (chartInstance) chartInstance.destroy();
 
-            const labels = history.map(h => `${h.g}G`);
-            const grapeData = history.map(h => h.grape);
-            const regData = history.map(h => h.reg);
+            if (filteredHistory.length === 0) {
+                chartInstance = new Chart(ctx, {
+                    type: 'line',
+                    data: { labels: ['0G'], datasets: [] },
+                    options: { plugins: { title: { display: true, text: '100G以降のデータからグラフ化されます' } } }
+                });
+                return;
+            }
+
+            const labels = filteredHistory.map(h => `${h.g}G`);
+            const grapeData = filteredHistory.map(h => h.grape);
+            const regData = filteredHistory.map(h => h.reg);
 
             chartInstance = new Chart(ctx, {
                 type: 'line',
                 data: {
                     labels: labels,
                     datasets: [
-                        { label: 'ぶどう確率 (1/◯)', data: grapeData, borderColor: '#af52de', tension: 0.1, yAxisID: 'y' },
+                        { label: 'ぶどう確率 (1/◯)', data: grapeData, borderColor: '#34c759', tension: 0.1, yAxisID: 'y' },
                         { label: 'REG確率 (1/◯)', data: regData, borderColor: '#007aff', tension: 0.1, yAxisID: 'y1' }
                     ]
                 },
@@ -613,7 +679,7 @@
                 document.getElementById('total-games').value = appData[currentTab].totalGames;
                 document.getElementById('machine-no').value = appData[currentTab].machineNo;
                 document.getElementById('series-select').value = appData[currentTab].series;
-                document.getElementById('estimation-result').innerText = '100G以上実戦すると設定目安が表示されます。';
+                document.getElementById('estimation-result').innerHTML = '<div style="text-align:center; color:var(--text-sub); font-size:12px; margin-bottom:10px;">100G以上実戦すると、ここに現在地を示すゲージが表示されます。</div>';
                 
                 if(isSubMode) toggleMode(); 
                 if(!isNameEditLocked) toggleLock(); 
