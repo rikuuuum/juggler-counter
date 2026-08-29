@@ -20,14 +20,15 @@
   <section id="snapshot-summary" class="snapshot-summary" hidden><span id="snapshot-text"></span><button id="snapshot-edit">修正</button></section>
   <section class="game-card">
     <div><small>総回転</small><strong id="total-display">0 G</strong></div>
-    <div><small>現在G</small><strong id="current-display">0 G</strong></div>
+    <div><small>現在G <button class="mini-edit" id="current-edit" aria-label="現在Gを修正">✎</button></small><strong id="current-display">0 G</strong></div>
     <div class="game-controls"><button data-games="-10">−10</button><button data-games="-1">−1</button><button data-games="1">+1</button><button data-games="10">+10</button></div>
   </section>
   <p class="counter-note">6項目の確率は <strong>実戦開始後のみ</strong> を分母に計算します。</p>
   <section id="counter-grid" class="counter-grid" aria-label="基本カウントカード"></section>
   <details id="custom-section" class="custom-section" hidden><summary id="custom-summary">追加項目</summary><section id="custom-grid" class="counter-grid custom-grid" aria-label="追加カウントカード"></section></details>
-  <section class="count-controls"><button id="add-mode" class="active">＋ 加算</button><button id="subtract-mode">－ 減算</button><button class="undo" id="undo-button">↩︎ Undo</button></section>
+  <section class="count-controls"><button id="add-mode" class="active">＋ 加算</button><button id="subtract-mode">－ 減算</button><button class="undo" id="undo-button">↶ 1つ戻す</button></section>
   <section class="aggregate"><div><small>BIG合算</small><strong id="agg-bb">1/---</strong></div><div><small>REG合算</small><strong id="agg-rb">1/---</strong></div><div><small>ボーナス合算</small><strong id="agg-total">1/---</strong></div></section>
+  <details class="main-compare" open><summary>設定別基準値との比較</summary><div id="main-compare-content"></div></details>
   <section class="actions"><button data-open="compare">設定比較</button><button data-open="graph">推移</button><button data-open="spec">スペック</button></section>
 </main>
 <footer class="affiliate">PR / 関連コンテンツ<br><small>当サイトはアフィリエイト広告を利用しています。</small></footer>
@@ -41,6 +42,7 @@
 
 <dialog id="snapshot-dialog"><form method="dialog" class="dialog-card"><header><h2>着席時データ</h2><button>✕</button></header><label>総回転<input id="start-total-input" type="number" min="0" inputmode="numeric"></label><label>BIG<input id="start-bb-input" type="number" min="0" inputmode="numeric"></label><label>REG<input id="start-rb-input" type="number" min="0" inputmode="numeric"></label><label>現在G<input id="start-current-input" type="number" min="0" inputmode="numeric"></label><button type="button" id="snapshot-save">実戦開始 / 保存</button></form></dialog>
 <dialog id="count-dialog"><form method="dialog" class="dialog-card"><header><h2 id="count-dialog-title">回数を編集</h2><button>✕</button></header><label>回数<input id="count-edit-input" type="number" min="0" step="1" inputmode="numeric"></label><p id="count-edit-error" class="error" hidden>0以上の整数を入力してください。</p><div class="settings-actions"><button value="cancel">キャンセル</button><button type="button" id="count-edit-save">保存</button></div></form></dialog>
+<dialog id="current-dialog"><form method="dialog" class="dialog-card"><header><h2>現在Gを修正</h2><button>✕</button></header><label>現在G<input id="current-edit-input" type="number" min="0" step="1" inputmode="numeric"></label><p id="current-edit-error" class="error" hidden>0以上かつ総回転以下の整数を入力してください。</p><div class="settings-actions"><button value="cancel">キャンセル</button><button type="button" id="current-edit-save">保存</button></div></form></dialog>
 
 <dialog id="compare-dialog"><form method="dialog" class="dialog-card"><header><h2>設定別基準値との比較</h2><button>✕</button></header><p id="compare-note"></p><div id="compare-content"></div></form></dialog>
 <dialog id="graph-dialog"><form method="dialog" class="dialog-card"><header><h2>確率推移グラフ</h2><button>✕</button></header><div class="chart-wrap"><canvas id="prob-chart"></canvas></div><p id="graph-note"></p></form></dialog>
