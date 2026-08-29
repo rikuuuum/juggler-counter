@@ -29,7 +29,7 @@
   <section class="count-controls"><button id="add-mode" class="active">＋ 加算</button><button id="subtract-mode">－ 減算</button><button class="undo" id="undo-button">↶ 1つ戻す</button></section>
   <section class="aggregate"><div><small>BIG合算</small><strong id="agg-bb">1/---</strong></div><div><small>REG合算</small><strong id="agg-rb">1/---</strong></div><div><small>ボーナス合算</small><strong id="agg-total">1/---</strong></div></section>
   <details class="main-compare" open><summary>設定別基準値との比較</summary><div id="main-compare-content"></div></details>
-  <section class="actions"><button data-open="compare">設定比較</button><button data-open="graph">推移</button><button data-open="spec">スペック</button></section>
+  <section class="actions"><button data-open="graph">推移</button><button data-open="spec">スペック</button></section>
 </main>
 <footer class="affiliate">PR / 関連コンテンツ<br><small>当サイトはアフィリエイト広告を利用しています。</small></footer>
 
@@ -44,7 +44,6 @@
 <dialog id="count-dialog"><form method="dialog" class="dialog-card"><header><h2 id="count-dialog-title">回数を編集</h2><button>✕</button></header><label>回数<input id="count-edit-input" type="number" min="0" step="1" inputmode="numeric"></label><p id="count-edit-error" class="error" hidden>0以上の整数を入力してください。</p><div class="settings-actions"><button value="cancel">キャンセル</button><button type="button" id="count-edit-save">保存</button></div></form></dialog>
 <dialog id="current-dialog"><form method="dialog" class="dialog-card"><header><h2>現在Gを修正</h2><button>✕</button></header><label>現在G<input id="current-edit-input" type="number" min="0" step="1" inputmode="numeric"></label><p id="current-edit-error" class="error" hidden>0以上かつ総回転以下の整数を入力してください。</p><div class="settings-actions"><button value="cancel">キャンセル</button><button type="button" id="current-edit-save">保存</button></div></form></dialog>
 
-<dialog id="compare-dialog"><form method="dialog" class="dialog-card"><header><h2>設定別基準値との比較</h2><button>✕</button></header><p id="compare-note"></p><div id="compare-content"></div></form></dialog>
 <dialog id="graph-dialog"><form method="dialog" class="dialog-card"><header><h2>確率推移グラフ</h2><button>✕</button></header><div class="chart-wrap"><canvas id="prob-chart"></canvas></div><p id="graph-note"></p></form></dialog>
 <dialog id="spec-dialog"><form method="dialog" class="dialog-card"><header><h2 id="spec-title">機種スペック</h2><button>✕</button></header><div class="table-wrap" id="spec-content"></div></form></dialog>
 <script src="./vendor/chart.umd.min.js"></script>
