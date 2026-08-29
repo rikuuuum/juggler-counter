@@ -16,6 +16,8 @@
   <nav class="tabs" aria-label="台切替"><button data-tab="A">台 A</button><button data-tab="B">台 B</button><button data-tab="C">台 C</button></nav>
   <section class="mode-switch"><button data-mode="machine">台全体 0G〜</button><button data-mode="session">自分の実戦</button></section>
   <section class="quick-info"><strong id="machine-label">マイジャグラーV</strong><span id="machine-number">台番号 未入力</span><span id="save-status">✓ 自動保存済み</span></section>
+  <section id="start-card" class="start-card"><strong>この台の実戦を開始</strong><div><button id="start-zero">0Gから打つ</button><button id="start-mid">途中から打つ</button></div></section>
+  <section id="snapshot-summary" class="snapshot-summary" hidden><span id="snapshot-text"></span><button id="snapshot-edit">修正</button></section>
   <section class="game-card">
     <div><small>総回転</small><strong id="total-display">0 G</strong></div>
     <div><small>現在G</small><strong id="current-display">0 G</strong></div>
@@ -24,7 +26,7 @@
   <p class="counter-note">6項目の確率は <strong>実戦開始後のみ</strong> を分母に計算します。</p>
   <section id="counter-grid" class="counter-grid" aria-label="基本カウントカード"></section>
   <details id="custom-section" class="custom-section" hidden><summary id="custom-summary">追加項目</summary><section id="custom-grid" class="counter-grid custom-grid" aria-label="追加カウントカード"></section></details>
-  <button class="undo" id="undo-button">↩︎ Undo</button>
+  <section class="count-controls"><button id="add-mode" class="active">＋ 加算</button><button id="subtract-mode">－ 減算</button><button class="undo" id="undo-button">↩︎ Undo</button></section>
   <section class="aggregate"><div><small>BIG合算</small><strong id="agg-bb">1/---</strong></div><div><small>REG合算</small><strong id="agg-rb">1/---</strong></div><div><small>ボーナス合算</small><strong id="agg-total">1/---</strong></div></section>
   <section class="actions"><button data-open="compare">設定比較</button><button data-open="graph">推移</button><button data-open="spec">スペック</button></section>
 </main>
@@ -32,16 +34,18 @@
 
 <dialog id="settings-dialog"><form method="dialog" class="dialog-card"><header><h2>台設定・カウンター編集</h2><button>✕</button></header>
   <label>機種<select id="series-input"></select></label><label>台番号<input id="machine-input" maxlength="30"></label>
-  <fieldset><legend>着席時データ</legend><label>総回転<input id="start-total-input" type="number" min="0"></label><label>BIG<input id="start-bb-input" type="number" min="0"></label><label>REG<input id="start-rb-input" type="number" min="0"></label><label>現在G<input id="start-current-input" type="number" min="0"></label><button type="button" id="snapshot-save">着席データを確定</button></fieldset>
   <label>現在の総回転<input id="total-input" type="number" min="0" inputmode="numeric"></label><small>入力中は履歴に保存せず、変更確定時に記録します。</small>
   <section id="counter-settings"></section><button type="button" id="add-counter">＋ カスタム項目を追加</button>
   <section class="settings-actions"><button type="button" id="copy-button">データをコピー</button><button type="button" class="danger" id="reset-button">台データをリセット</button></section>
 </form></dialog>
+
+<dialog id="snapshot-dialog"><form method="dialog" class="dialog-card"><header><h2>着席時データ</h2><button>✕</button></header><label>総回転<input id="start-total-input" type="number" min="0" inputmode="numeric"></label><label>BIG<input id="start-bb-input" type="number" min="0" inputmode="numeric"></label><label>REG<input id="start-rb-input" type="number" min="0" inputmode="numeric"></label><label>現在G<input id="start-current-input" type="number" min="0" inputmode="numeric"></label><button type="button" id="snapshot-save">実戦開始 / 保存</button></form></dialog>
+<dialog id="count-dialog"><form method="dialog" class="dialog-card"><header><h2 id="count-dialog-title">回数を編集</h2><button>✕</button></header><label>回数<input id="count-edit-input" type="number" min="0" step="1" inputmode="numeric"></label><p id="count-edit-error" class="error" hidden>0以上の整数を入力してください。</p><div class="settings-actions"><button value="cancel">キャンセル</button><button type="button" id="count-edit-save">保存</button></div></form></dialog>
 
 <dialog id="compare-dialog"><form method="dialog" class="dialog-card"><header><h2>設定別基準値との比較</h2><button>✕</button></header><p id="compare-note"></p><div id="compare-content"></div></form></dialog>
 <dialog id="graph-dialog"><form method="dialog" class="dialog-card"><header><h2>確率推移グラフ</h2><button>✕</button></header><div class="chart-wrap"><canvas id="prob-chart"></canvas></div><p id="graph-note"></p></form></dialog>
 <dialog id="spec-dialog"><form method="dialog" class="dialog-card"><header><h2 id="spec-title">機種スペック</h2><button>✕</button></header><div class="table-wrap" id="spec-content"></div></form></dialog>
 <script src="./vendor/chart.umd.min.js"></script>
 <script src="./app.js"></script>
+<div id="tap-flash" aria-hidden="true"></div>
 </body></html>
-
