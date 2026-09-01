@@ -14,12 +14,13 @@
 <header><h1>カウンター</h1><button class="icon" id="settings-open" aria-label="設定">⚙︎</button><button class="icon" id="theme-toggle">🌙</button></header>
 <main>
   <nav class="tabs" aria-label="台切替"><button data-tab="A">台 A</button><button data-tab="B">台 B</button><button data-tab="C">台 C</button></nav>
-  <section class="mode-switch"><button data-mode="machine">台全体 0G〜</button><button data-mode="session">自分の実戦</button></section>
+  <label class="home-series">機種<select id="series-input"></select></label>
   <section class="quick-info"><strong id="machine-label">マイジャグラーV</strong><span id="machine-number">台番号 未入力</span><span id="save-status">✓ 自動保存済み</span></section>
   <section id="start-card" class="start-card"><strong>この台の実戦を開始</strong><div><button id="start-zero">0Gから打つ</button><button id="start-mid">途中から打つ</button></div></section>
   <section id="snapshot-summary" class="snapshot-summary" hidden><span id="snapshot-text"></span><button id="snapshot-edit">修正</button></section>
+  <section class="mode-switch"><button data-mode="machine">台全体 0G〜</button><button data-mode="session">自分の実戦</button></section>
   <section class="game-card">
-    <div><small>総回転</small><strong id="total-display">0 G</strong></div>
+    <div><small>総回転 <button class="mini-edit" id="total-edit" aria-label="総回転を修正">✎</button></small><strong id="total-display">0 G</strong></div>
     <div><small>現在G <button class="mini-edit" id="current-edit" aria-label="現在Gを修正">✎</button></small><strong id="current-display">0 G</strong></div>
     <div class="game-controls"><button data-games="-10">−10</button><button data-games="-1">−1</button><button data-games="1">+1</button><button data-games="10">+10</button></div>
   </section>
@@ -34,7 +35,7 @@
 <footer class="affiliate">PR / 関連コンテンツ<br><small>当サイトはアフィリエイト広告を利用しています。</small></footer>
 
 <dialog id="settings-dialog"><form method="dialog" class="dialog-card"><header><h2>台設定・カウンター編集</h2><button>✕</button></header>
-  <label>機種<select id="series-input"></select></label><label>台番号<input id="machine-input" maxlength="30"></label>
+  <label>台番号<input id="machine-input" maxlength="30"></label>
   <label>現在の総回転<input id="total-input" type="number" min="0" inputmode="numeric"></label><small>入力中は履歴に保存せず、変更確定時に記録します。</small>
   <section id="counter-settings"></section><button type="button" id="add-counter">＋ カスタム項目を追加</button>
   <section class="settings-actions"><button type="button" id="copy-button">データをコピー</button><button type="button" class="danger" id="reset-button">台データをリセット</button></section>
@@ -43,6 +44,7 @@
 <dialog id="snapshot-dialog"><form method="dialog" class="dialog-card"><header><h2>着席時データ</h2><button>✕</button></header><label>総回転<input id="start-total-input" type="number" min="0" inputmode="numeric"></label><label>BIG<input id="start-bb-input" type="number" min="0" inputmode="numeric"></label><label>REG<input id="start-rb-input" type="number" min="0" inputmode="numeric"></label><label>現在G<input id="start-current-input" type="number" min="0" inputmode="numeric"></label><button type="button" id="snapshot-save">実戦開始 / 保存</button></form></dialog>
 <dialog id="count-dialog"><form method="dialog" class="dialog-card"><header><h2 id="count-dialog-title">回数を編集</h2><button>✕</button></header><label>回数<input id="count-edit-input" type="number" min="0" step="1" inputmode="numeric"></label><p id="count-edit-error" class="error" hidden>0以上の整数を入力してください。</p><div class="settings-actions"><button value="cancel">キャンセル</button><button type="button" id="count-edit-save">保存</button></div></form></dialog>
 <dialog id="current-dialog"><form method="dialog" class="dialog-card"><header><h2>現在Gを修正</h2><button>✕</button></header><label>現在G<input id="current-edit-input" type="number" min="0" step="1" inputmode="numeric"></label><p id="current-edit-error" class="error" hidden>0以上かつ総回転以下の整数を入力してください。</p><div class="settings-actions"><button value="cancel">キャンセル</button><button type="button" id="current-edit-save">保存</button></div></form></dialog>
+<dialog id="total-dialog"><form method="dialog" class="dialog-card"><header><h2>総回転を修正</h2><button>✕</button></header><label>総回転<input id="total-edit-input" type="number" min="0" step="1" inputmode="numeric"></label><p id="total-edit-error" class="error" hidden>着席時総回転以上で、現在Gを維持できる整数を入力してください。</p><div class="settings-actions"><button value="cancel">キャンセル</button><button type="button" id="total-edit-save">保存</button></div></form></dialog>
 
 <dialog id="graph-dialog"><form method="dialog" class="dialog-card"><header><h2>確率推移グラフ</h2><button>✕</button></header><div class="chart-wrap"><canvas id="prob-chart"></canvas></div><p id="graph-note"></p></form></dialog>
 <dialog id="spec-dialog"><form method="dialog" class="dialog-card"><header><h2 id="spec-title">機種スペック</h2><button>✕</button></header><div class="table-wrap" id="spec-content"></div></form></dialog>
