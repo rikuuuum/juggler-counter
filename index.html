@@ -15,16 +15,16 @@
 <main>
   <nav class="tabs" aria-label="台切替"><button data-tab="A">台 A</button><button data-tab="B">台 B</button><button data-tab="C">台 C</button></nav>
   <label class="home-series">機種<select id="series-input"></select></label>
-  <section class="quick-info"><strong id="machine-label">マイジャグラーV</strong><span id="machine-number">台番号 未入力</span><span id="save-status">✓ 自動保存済み</span></section>
+  <section class="quick-info"><span id="machine-label" hidden></span><span id="machine-number">台番号 未入力</span><span id="save-status">✓ 自動保存済み</span></section>
   <section id="start-card" class="start-card"><strong>この台の実戦を開始</strong><div><button id="start-zero">0Gから打つ</button><button id="start-mid">途中から打つ</button></div></section>
   <section id="snapshot-summary" class="snapshot-summary" hidden><span id="snapshot-text"></span><button id="snapshot-edit">修正</button></section>
   <section class="mode-switch"><button data-mode="machine">台全体 0G〜</button><button data-mode="session">自分の実戦</button></section>
   <section class="game-card">
-    <div><small>総回転 <button class="mini-edit" id="total-edit" aria-label="総回転を修正">✎</button></small><strong id="total-display">0 G</strong></div>
-    <div><small>現在G <button class="mini-edit" id="current-edit" aria-label="現在Gを修正">✎</button></small><strong id="current-display">0 G</strong></div>
+    <div><small>総回転 <button class="mini-edit" id="total-edit" aria-label="総回転を修正">✎</button></small><button class="game-value" id="total-display" aria-label="総回転を編集">0 G</button></div>
+    <div><small>現在G <button class="mini-edit" id="current-edit" aria-label="現在Gを修正">✎</button></small><button class="game-value" id="current-display" aria-label="現在Gを編集">0 G</button></div>
     <div class="game-controls"><button data-games="-10">−10</button><button data-games="-1">−1</button><button data-games="1">+1</button><button data-games="10">+10</button></div>
   </section>
-  <p class="counter-note">6項目の確率は <strong>実戦開始後のみ</strong> を分母に計算します。</p>
+  <p class="counter-note" id="counter-note">着席前の内訳が不明なため各カウント確率は「—」で表示します。</p>
   <section id="counter-grid" class="counter-grid" aria-label="基本カウントカード"></section>
   <details id="custom-section" class="custom-section" hidden><summary id="custom-summary">追加項目</summary><section id="custom-grid" class="counter-grid custom-grid" aria-label="追加カウントカード"></section></details>
   <section class="count-controls"><button id="add-mode" class="active">＋ 加算</button><button id="subtract-mode">－ 減算</button><button class="undo" id="undo-button">↶ 1つ戻す</button></section>
