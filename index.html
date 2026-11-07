@@ -11,11 +11,12 @@
   <title>高機能ジャグラーカウンター</title>
 </head>
 <body>
-<header><h1>カウンター</h1><button class="icon" id="settings-open" aria-label="設定">⚙︎</button><button class="icon" id="theme-toggle">🌙</button></header>
+<header><h1>カウンター</h1><button class="icon" id="settings-open" aria-label="設定">⚙︎</button><button class="icon" id="theme-toggle" aria-label="ダークモードに切り替える">🌙</button></header>
 <main>
   <nav class="tabs" aria-label="台切替"><button data-tab="A">台 A</button><button data-tab="B">台 B</button><button data-tab="C">台 C</button></nav>
   <label class="home-series">機種<select id="series-input"></select></label>
-  <section class="quick-info"><span id="machine-number">台番号 未入力</span><span id="save-status">✓ 自動保存済み</span></section>
+  <p class="parameter-note" id="spec-load-status" role="status" aria-live="polite"></p>
+  <section class="quick-info"><span id="machine-number">台番号 未入力</span><span id="save-status" role="status" aria-live="polite">✓ 自動保存済み</span></section>
   <section id="start-card" class="start-card"><strong>この台の実戦を開始</strong><div><button id="start-zero">0Gから打つ</button><button id="start-mid">途中から打つ</button></div></section>
   <section id="snapshot-summary" class="snapshot-summary" hidden><span id="snapshot-text"></span><button id="snapshot-edit">修正</button></section>
   <button id="delete-data" class="danger home-danger">この台のデータを削除</button>
@@ -27,7 +28,7 @@
   <p class="counter-note" id="counter-note">着席前の内訳が不明なため各カウント確率は「—」で表示します。</p>
   <section id="counter-grid" class="counter-grid" aria-label="基本カウントカード"></section>
   <details id="custom-section" class="custom-section" hidden><summary id="custom-summary">追加項目</summary><section id="custom-grid" class="counter-grid custom-grid" aria-label="追加カウントカード"></section></details>
-  <section class="count-controls"><button id="add-mode" class="active">＋ 加算</button><button id="subtract-mode">－ 減算</button><button class="undo" id="undo-button">↶ 1つ戻す</button></section>
+  <section class="count-controls"><button id="add-mode" class="active" aria-pressed="true">＋ 加算</button><button id="subtract-mode" aria-pressed="false">－ 減算</button><button class="undo" id="undo-button" aria-label="取り消せる操作はありません">↶ 1つ戻す</button></section>
   <section class="aggregate"><div><small>BIG合算</small><strong id="agg-bb">1/---</strong></div><div><small>REG合算</small><strong id="agg-rb">1/---</strong></div><div><small>ボーナス合算</small><strong id="agg-total">1/---</strong></div></section>
   <details class="main-compare" open><summary>設定別基準値との比較</summary><div id="main-compare-content"></div></details>
   <section class="actions"><button data-open="spec">スペック</button></section>

@@ -12,3 +12,22 @@
 .game-value{display:block;width:100%;padding:0;background:transparent;color:var(--blue);font-size:20px;text-align:left}.mini-edit,.counter-card .counter-edit{min-width:44px;min-height:44px;font-size:18px;color:var(--text)}
 
 .backup-tools{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.backup-tools h3{font-size:14px;margin:0 0 6px}.backup-tools p{font-size:12px;color:var(--sub)}.backup-tools button{width:100%;border:1px solid var(--blue);color:var(--blue)}.backup-tools input{display:block;width:100%;margin-top:5px}.backup-tools #backup-message{min-height:1.4em}
+
+/* v17 mobile-first: keep high-frequency actions within reach. */
+.count-controls{position:sticky;bottom:calc(env(safe-area-inset-bottom) + 6px);z-index:10;padding:8px 7px;border:1px solid var(--line);border-radius:14px;background:var(--bg);box-shadow:0 5px 20px #00000025;isolation:isolate}
+.count-controls button{min-height:50px;border-radius:10px}
+.count-controls #add-mode{background:#e9f4ff;color:#004a90;border:1px solid #7cbcfb}
+.count-controls #add-mode.active{background:var(--blue);color:#fff;border-color:var(--blue)}
+.count-controls #subtract-mode{border:1px solid var(--line)}
+.count-controls #subtract-mode.subtract-active{background:#b71c1c!important;color:#fff!important;border:2px solid #ff453a;font-weight:900}
+.count-controls .undo{background:#965400;color:#fff}
+.counter-main:focus-visible,.counter-edit:focus-visible{outline:3px solid #ff9500;outline-offset:2px}
+.counter-main{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.counter-card{min-width:0}
+.counter-card .counter-main{min-width:0;overflow:hidden}
+.counter-card .counter-main span{overflow-wrap:anywhere}
+.main-compare .parameter-labels{max-width:100%}
+#save-status{overflow-wrap:anywhere}
+@media(min-width:640px){main,body>header,body>footer{max-width:740px;margin-inline:auto}.counter-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:359px){.count-controls{gap:3px;padding:6px 4px}.count-controls button{font-size:11px;padding-inline:3px}.counter-card .counter-main{padding:6px}.counter b{font-size:25px}}
+@media(prefers-reduced-motion:reduce){.counter:active{transform:none}}
