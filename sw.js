@@ -1,4 +1,4 @@
-const CACHE='juggler-counter-v21';
+const CACHE='juggler-counter-v22';
 const LOCAL=['./','./index.html','./styles.css','./app.js','./manifest.webmanifest','./data/juggler-specs.json','./icons/icon.svg'];
 const SCOPE=new URL(self.registration.scope);
 const KNOWN=new Set(LOCAL.map(path=>new URL(path,SCOPE).pathname));
