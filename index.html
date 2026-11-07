@@ -37,7 +37,7 @@
 <dialog id="settings-dialog"><form method="dialog" class="dialog-card"><header><h2>台設定・カウンター編集</h2><button>✕</button></header>
   <label>台番号<input id="machine-input" maxlength="30"></label>
   <label>現在の総回転<input id="total-input" type="number" min="0" inputmode="numeric"></label><small>入力中は履歴に保存せず、変更確定時に記録します。</small>
-  <section id="counter-settings"></section><button type="button" id="add-counter">＋ カスタム項目を追加</button>
+  <section id="counter-settings"></section><button type="button" id="add-counter">＋ カスタム項目を追加</button><section class="backup-tools"><h3>バックアップ・復元</h3><p>台A〜Cの記録をiPhoneに保存できます。復元すると現在の記録は上書きされます。</p><button type="button" id="backup-export">バックアップを保存（JSON）</button><label>保存済みデータを復元<input id="backup-import" type="file" accept=".json,application/json"></label><p id="backup-message" role="status" aria-live="polite"></p></section>
 </form></dialog>
 
 <dialog id="snapshot-dialog"><form method="dialog" class="dialog-card"><header><h2>着席時データ</h2><button>✕</button></header><label>総回転<input id="start-total-input" type="number" min="0" inputmode="numeric"></label><label>BIG<input id="start-bb-input" type="number" min="0" inputmode="numeric"></label><label>REG<input id="start-rb-input" type="number" min="0" inputmode="numeric"></label><button type="button" id="snapshot-save">実戦開始 / 保存</button></form></dialog>

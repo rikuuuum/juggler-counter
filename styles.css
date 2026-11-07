@@ -10,3 +10,5 @@
 .mode-machine .mode-switch button[data-mode="session"],.mode-session .mode-switch button[data-mode="machine"]{background:var(--card);color:var(--text);border:0}#tap-flash{transition:opacity .03s ease-out}#tap-flash.add,#tap-flash.subtract,#tap-flash.neutral{animation:none}#tap-flash.neutral{background:#64748b55}
 .parameter-label:nth-child(even){top:18px}.parameter-labels{height:52px}
 .game-value{display:block;width:100%;padding:0;background:transparent;color:var(--blue);font-size:20px;text-align:left}.mini-edit,.counter-card .counter-edit{min-width:44px;min-height:44px;font-size:18px;color:var(--text)}
+
+.backup-tools{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.backup-tools h3{font-size:14px;margin:0 0 6px}.backup-tools p{font-size:12px;color:var(--sub)}.backup-tools button{width:100%;border:1px solid var(--blue);color:var(--blue)}.backup-tools input{display:block;width:100%;margin-top:5px}.backup-tools #backup-message{min-height:1.4em}
