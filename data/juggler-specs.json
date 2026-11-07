@@ -100,8 +100,20 @@
     "sourceUrl": "https://www.kitadenshi.co.jp/slot/myjuggler6/",
     "verifiedAt": "2026-11-07",
     "otherRateSource": "ぶどう・単独BIG・単独REGは未検証の参考値。公式公表値ではありません。",
-    "grapeStatus": "参考推定（前作マイジャグラーVの値を流用。VIの公式公表・実測確定値ではない）",
-    "grapeSourceUrl": "https://zenailab.jp/juggler-count-ai/machines/myjuggler6/"
+    "grapeStatus": "北電子非公表：前作マイジャグラーVの実戦参考値をVIの暫定値として使用。VIの設定別ぶどう確率が実測で確定したものではありません。",
+    "grapeSourceUrl": "https://zenailab.jp/juggler-count-ai/machines/myjuggler6/",
+    "grapeAlternative": {
+      "label": "スロメーター参考推定（マイジャグラーV流用）",
+      "url": "https://slometer.com/tools/juggler/my-juggler-6/",
+      "values": [
+        5.9,
+        5.86,
+        5.83,
+        5.83,
+        5.83,
+        5.79
+      ]
+    }
   },
   {
     "id": "juggler-2",
