@@ -57,6 +57,42 @@
     "verifiedAt": ""
   },
   {
+    "id": "juggler-8",
+    "slug": "juggler-8",
+    "name": "マイジャグラーVI",
+    "grape": [],
+    "solo_bb": [],
+    "bb": [
+      273.1,
+      270.8,
+      266.4,
+      254,
+      240.1,
+      229.1
+    ],
+    "solo_rb": [],
+    "rb": [
+      409.6,
+      385.5,
+      336.1,
+      290,
+      268.6,
+      229.1
+    ],
+    "total": [
+      163.8,
+      159.1,
+      148.6,
+      135.4,
+      126.8,
+      114.6
+    ],
+    "source": "北電子公式",
+    "updatedAt": "2026-11-07",
+    "sourceUrl": "https://www.kitadenshi.co.jp/slot/myjuggler6/",
+    "verifiedAt": "2026-11-07"
+  },
+  {
     "id": "juggler-2",
     "slug": "juggler-2",
     "name": "アイムジャグラーEX",
